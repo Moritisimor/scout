@@ -1,0 +1,8 @@
+[package]
+name = "scout"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sysinfo = "0"
+owo-colors = "4"
