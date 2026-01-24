@@ -22,11 +22,13 @@ fn main() -> io::Result<()> {
         thread::sleep(time::Duration::from_secs(1));
         println!("\x1b[H\x1b[2J\x1b[3J{}", "[ System ]".bold().blue());
         println!(
-            "{}: {}\n{}: {}",
+            "{}: {}\n{}: {}\n{}: {}",
             "OS".yellow(),
             sysinfo::System::name().unwrap_or("Unknown".into()).green(),
             "Architecture".yellow(),
-            sysinfo::System::cpu_arch().green()
+            sysinfo::System::cpu_arch().green(),
+            "Kernel".yellow(),
+            sysinfo::System::kernel_long_version().green()
         );
 
         println!("{}", "\n[ Memory ]".bold().blue());
