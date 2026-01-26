@@ -1,12 +1,10 @@
+mod helpers;
+
 use owo_colors::OwoColorize;
 use std::{
     io::{self, Write},
     thread, time,
 };
-
-fn make_error(msg: &str) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, msg)
-}
 
 fn main() -> io::Result<()> {
     let mut s = sysinfo::System::new();
@@ -66,7 +64,7 @@ fn main() -> io::Result<()> {
             "Model".yellow(),
             s.cpus()
                 .get(0)
-                .ok_or(make_error("Could not read CPU model"))?
+                .ok_or(helpers::make_err("Could not read CPU model"))?
                 .brand()
                 .green()
         );
@@ -76,9 +74,8 @@ fn main() -> io::Result<()> {
             "Frequency".yellow(),
             (s.cpus()
                 .get(0)
-                .ok_or(make_error("Could not read CPU frequency"))?
-                .frequency() as f64
-                / 1000.)
+                .ok_or(helpers::make_err("Could not read CPU frequency"))?
+                .frequency() as f64 / 1000.)
                 .green(),
             "Ghz".purple()
         );
@@ -93,7 +90,7 @@ fn main() -> io::Result<()> {
         print!("{}:", "Usage per core".yellow());
         let mut i = 0;
         for cpu in s.cpus() {
-            if i % 2 == 0 {
+            if i % 4 == 0 {
                 println!("")
             } else {
                 print!("\t")
@@ -108,10 +105,7 @@ fn main() -> io::Result<()> {
             i += 1;
         }
 
-        s.refresh_cpu_usage();
-        s.refresh_cpu_frequency();
-        s.refresh_memory();
-        n.refresh(true);
+        helpers::refresh(&mut s, &mut n);
         io::stdout().flush()?
     }
 }
