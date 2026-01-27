@@ -1,4 +1,9 @@
 mod helpers;
+mod ram;
+mod swap;
+mod net;
+mod processor;
+mod environment;
 
 use owo_colors::OwoColorize;
 use std::{
@@ -18,74 +23,23 @@ fn main() -> io::Result<()> {
 
     loop {
         thread::sleep(time::Duration::from_secs(1));
-        println!("\x1b[H\x1b[2J\x1b[3J{}", "[ System ]".bold().blue());
-        println!(
-            "{}: {}\n{}: {}\n{}: {}",
-            "OS".yellow(),
-            sysinfo::System::name().unwrap_or("Unknown".into()).green(),
-            "Architecture".yellow(),
-            sysinfo::System::cpu_arch().green(),
-            "Kernel".yellow(),
-            sysinfo::System::kernel_long_version().green()
-        );
+        helpers::clear();
+        println!("{}", "[ System ]".bold().blue());
+        println!("{}", environment::format_os_info());
 
         println!("{}", "\n[ Memory ]".bold().blue());
-        println!(
-            "{}: {:.2} {} / {:.2} {}",
-            "RAM".yellow(),
-            (s.free_memory() as f64 / 1000000000.).green(),
-            "GB".purple(),
-            (s.total_memory() as f64 / 1000000000.).green(),
-            "GB".purple()
-        );
-
-        println!(
-            "{}: {:.2} {}",
-            "Swap".yellow(),
-            (s.total_swap() as f64 / 1000000000.).green(),
-            "GB".purple()
-        );
+        println!("{}", ram::format_data(&s));
+        println!("{}", swap::format_data(&s));
 
         println!("{}", "\n[ Net ]".bold().blue());
         for (name, data) in &n {
-            println!(
-                "{}: {:.2} {} ↑ / {:.2} {} ↓",
-                name.yellow(),
-                (data.transmitted() as f64 / 1000000.).green(),
-                "MB".purple(),
-                (data.received() as f64 / 1000000.).green(),
-                "MB".purple()
-            )
+            println!("{}", net::format_interface_data(name, data))
         }
 
         println!("\n{}", "[ CPU ]".bold().blue());
-        println!(
-            "{}: {}",
-            "Model".yellow(),
-            s.cpus()
-                .get(0)
-                .ok_or(helpers::make_err("Could not read CPU model"))?
-                .brand()
-                .green()
-        );
-        
-        println!(
-            "{}: {} {}",
-            "Frequency".yellow(),
-            (s.cpus()
-                .get(0)
-                .ok_or(helpers::make_err("Could not read CPU frequency"))?
-                .frequency() as f64 / 1000.)
-                .green(),
-            "Ghz".purple()
-        );
-
-        println!(
-            "{}: {:.2} {}",
-            "Total Usage".yellow(),
-            s.global_cpu_usage().green(),
-            "%".purple()
-        );
+        println!("{}", processor::format_model_data(&s)?);
+        println!("{}", processor::format_frequency(&s)?);
+        println!("{}", processor::format_global_usage(&s));
 
         print!("{}:", "Usage per core".yellow());
         let mut i = 0;
@@ -96,12 +50,7 @@ fn main() -> io::Result<()> {
                 print!("\t")
             }
 
-            print!(
-                "{}: {:.2} {}",
-                i.magenta(),
-                cpu.cpu_usage().green(),
-                "%".purple()
-            );
+            print!("{}", processor::format_core_usage(i, cpu));
             i += 1;
         }
 
