@@ -1,9 +1,10 @@
+mod disk;
+mod environment;
 mod helpers;
-mod ram;
-mod swap;
 mod net;
 mod processor;
-mod environment;
+mod ram;
+mod swap;
 
 use owo_colors::OwoColorize;
 use std::{
@@ -14,7 +15,8 @@ use std::{
 fn main() -> io::Result<()> {
     let mut s = sysinfo::System::new();
     let mut n = sysinfo::Networks::new_with_refreshed_list();
-    s.refresh_all();
+    let mut d = sysinfo::Disks::new();
+
     println!(
         "{}\n{}",
         "Getting data...".magenta(),
@@ -22,9 +24,9 @@ fn main() -> io::Result<()> {
     );
 
     loop {
+        helpers::refresh(&mut s, &mut n, &mut d);
         thread::sleep(time::Duration::from_secs(1));
         helpers::clear();
-        println!("{}", "[ System ]".bold().blue());
         println!("{}", environment::format_os_info());
 
         println!("{}", "\n[ Memory ]".bold().blue());
@@ -34,6 +36,11 @@ fn main() -> io::Result<()> {
         println!("{}", "\n[ Net ]".bold().blue());
         for (name, data) in &n {
             println!("{}", net::format_interface_data(name, data))
+        }
+
+        println!("{}", "\n[ Disk ]".bold().blue());
+        for disk in &d {
+            println!("{}", disk::format_disk_data(disk))
         }
 
         println!("\n{}", "[ CPU ]".bold().blue());
@@ -54,7 +61,6 @@ fn main() -> io::Result<()> {
             i += 1;
         }
 
-        helpers::refresh(&mut s, &mut n);
         io::stdout().flush()?
     }
 }

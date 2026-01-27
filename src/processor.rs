@@ -24,9 +24,9 @@ pub fn format_frequency(s: &System) -> io::Result<String> {
         (s.cpus()
             .get(0)
             .ok_or(helpers::make_err("Could not read CPU frequency"))?
-            .frequency() as f64 / 1000.)
+            .frequency() as f64
+            / 1000.)
             .green(),
-
         "Ghz".purple()
     ))
 }
