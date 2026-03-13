@@ -16,6 +16,7 @@ fn main() -> io::Result<()> {
     let mut s = sysinfo::System::new();
     let mut n = sysinfo::Networks::new_with_refreshed_list();
     let mut d = sysinfo::Disks::new();
+    helpers::refresh(&mut s, &mut n, &mut d);
 
     println!(
         "{}\n{}",
@@ -24,14 +25,22 @@ fn main() -> io::Result<()> {
     );
 
     loop {
-        helpers::refresh(&mut s, &mut n, &mut d);
         thread::sleep(time::Duration::from_secs(1));
+        helpers::refresh(&mut s, &mut n, &mut d);
+
+        let ram_date = ram::format_data(&s);
+        let swap_data = swap::format_data(&s);
+
+        let cpu_model = processor::format_model_data(&s)?;
+        let cpu_frequency = processor::format_frequency(&s)?;
+        let cpu_global_usage = processor::format_global_usage(&s);
+        
         helpers::clear();
         println!("{}", environment::format_os_info());
 
         println!("{}", "\n[ Memory ]".bold().blue());
-        println!("{}", ram::format_data(&s));
-        println!("{}", swap::format_data(&s));
+        println!("{}", ram_date);
+        println!("{}", swap_data);
 
         println!("{}", "\n[ Net ]".bold().blue());
         for (name, data) in &n {
@@ -44,15 +53,15 @@ fn main() -> io::Result<()> {
         }
 
         println!("\n{}", "[ CPU ]".bold().blue());
-        println!("{}", processor::format_model_data(&s)?);
-        println!("{}", processor::format_frequency(&s)?);
-        println!("{}", processor::format_global_usage(&s));
+        println!("{}", cpu_model);
+        println!("{}", cpu_frequency);
+        println!("{}", cpu_global_usage);
 
         print!("{}:", "Usage per core".yellow());
         let mut i = 0;
         for cpu in s.cpus() {
             if i % 4 == 0 {
-                println!("")
+                println!()
             } else {
                 print!("\t")
             }
