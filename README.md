@@ -7,11 +7,11 @@ Scout is a minimalist CLI tool for monitoring your system. Currently, the follow
 - CPU
 - RAM
 - Net
+- Disk
 - OS
 
 The following aspects are planned:
 
-- Disk
 - GPU (maybe)
 
 Current aspects may also be further improved, so they can, for example, show more data.
