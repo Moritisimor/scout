@@ -8,7 +8,7 @@ mod swap;
 
 use owo_colors::OwoColorize;
 use std::{
-    io::{self, Write},
+    io::{self},
     thread, time,
 };
 
@@ -25,6 +25,7 @@ fn main() -> io::Result<()> {
     );
 
     loop {
+        let mut buf = String::new();
         thread::sleep(time::Duration::from_secs(1));
         helpers::refresh(&mut s, &mut n, &mut d);
 
@@ -35,41 +36,41 @@ fn main() -> io::Result<()> {
         let cpu_frequency = processor::format_frequency(&s)?;
         let cpu_global_usage = processor::format_global_usage(&s);
         
-        helpers::clear();
-        println!("{}", environment::format_os_info());
+        buf += &format!("{}\n", environment::format_os_info());
 
-        println!("{}", "\n[ Memory ]".bold().blue());
-        println!("{}", ram_date);
-        println!("{}", swap_data);
+        buf += &format!("{}\n", "\n[ Memory ]".bold().blue());
+        buf += &format!("{}\n", ram_date).as_str();
+        buf += &format!("{}\n", swap_data).as_str();
 
-        println!("{}", "\n[ Net ]".bold().blue());
+        buf += &format!("{}\n", "\n[ Net ]".bold().blue());
         for (name, data) in &n {
-            println!("{}", net::format_interface_data(name, data))
+            buf += &format!("{}\n", net::format_interface_data(name, data))
         }
 
-        println!("{}", "\n[ Disk ]".bold().blue());
+        buf += &format!("{}\n", "\n[ Disk ]".bold().blue());
         for disk in &d {
-            println!("{}", disk::format_disk_data(disk))
+            buf += &format!("{}\n", disk::format_disk_data(disk))
         }
 
-        println!("\n{}", "[ CPU ]".bold().blue());
-        println!("{}", cpu_model);
-        println!("{}", cpu_frequency);
-        println!("{}", cpu_global_usage);
+        buf += &format!("\n{}\n", "[ CPU ]".bold().blue());
+        buf += &format!("{}\n", cpu_model);
+        buf += &format!("{}\n", cpu_frequency);
+        buf += &format!("{}\n", cpu_global_usage);
 
-        print!("{}:", "Usage per core".yellow());
+        buf += &format!("{}:", "Usage per core".yellow());
         let mut i = 0;
         for cpu in s.cpus() {
             if i % 4 == 0 {
-                println!()
+                buf += "\n"
             } else {
-                print!("\t")
+                buf += "\t"
             }
 
-            print!("{}", processor::format_core_usage(i, cpu));
+            buf += &format!("{}", processor::format_core_usage(i, cpu));
             i += 1;
         }
 
-        io::stdout().flush()?
+        helpers::clear();
+        println!("{buf}")
     }
 }
