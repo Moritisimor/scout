@@ -28,3 +28,8 @@ Now to execute:
 ```bash
 ./scout
 ```
+
+## Screenshots
+On Arch Linux
+
+![Screenshot](screenshots/screenshot.png)
